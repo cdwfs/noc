@@ -13,6 +13,12 @@
 
 /* global Two */
 
+// Returns a random integer from min (inclusive) to max (exclusive).
+function randomInt(min, max) {
+	"use strict";
+	return Math.floor( Math.random() * (max-min)) + min;
+}
+
 
 var canvasElem = document.getElementById('twobox-canvas');
 var two = new Two({
