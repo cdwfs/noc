@@ -19,6 +19,30 @@ function randomInt(min, max) {
 	return Math.floor( Math.random() * (max-min)) + min;
 }
 
+function isArray(obj) {
+	"use strict";
+	return Object.prototype.toString.apply(obj) === '[object Array]';
+}
+
+function standardDeviation(arr) {
+	"use strict";
+	if (!isArray(arr) || arr.length === 0) {
+		return 0.0;
+	}
+	var iElem, mean = 0.0;
+	for(iElem=0; iElem<arr.length; iElem+=1) {
+		mean += arr[iElem];
+	}
+	mean /= arr.length;
+	var stddev = 0.0;
+	for(iElem=0; iElem<arr.length; iElem+=1) {
+		var variance = (arr[iElem] - mean);
+		stddev += variance*variance;
+	}
+	return Math.sqrt(stddev/arr.length);
+}
+
+
 
 var canvasElem = document.getElementById('twobox-canvas');
 var two = new Two({
