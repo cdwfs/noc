@@ -19,29 +19,30 @@ function randomInt(min, max) {
 	return Math.floor( Math.random() * (max-min)) + min;
 }
 
-function isArray(obj) {
+// Returns a normal deviate using the ratio-of-uniforms method from
+// Numerical Recipes.
+function randomRatioOfUniforms() {
 	"use strict";
-	return Object.prototype.toString.apply(obj) === '[object Array]';
+	var u, v, x, y, q;
+	do {
+		u = Math.random();
+		v = 1.7156 * (Math.random() - 0.5);
+		x = u - 0.449871;
+		y = Math.abs(v) + 0.386595;
+		q = x*x + y*(0.19600*y - 0.25472*x);
+	} while (q > 0.27597 && (q > 0.27846 || v*v > -4.0 * Math.log(u)*u*u));
+	return v/u;
 }
-
-function standardDeviation(arr) {
+function randomNormal() {
 	"use strict";
-	if (!isArray(arr) || arr.length === 0) {
-		return 0.0;
-	}
-	var iElem, mean = 0.0;
-	for(iElem=0; iElem<arr.length; iElem+=1) {
-		mean += arr[iElem];
-	}
-	mean /= arr.length;
-	var stddev = 0.0;
-	for(iElem=0; iElem<arr.length; iElem+=1) {
-		var variance = (arr[iElem] - mean);
-		stddev += variance*variance;
-	}
-	return Math.sqrt(stddev/arr.length);
+	return randomRatioOfUniforms();
 }
-
+// Returns a deviate from a Gaussian distribution, using the provided mean (mu)
+// and standard distribution (sigma)
+function randomGaussian(mu, sigma) {
+	"use strict";
+	return mu + sigma*randomNormal();
+}
 
 
 var canvasElem = document.getElementById('twobox-canvas');
@@ -64,10 +65,13 @@ document.addEventListener( 'mousemove', function(e) {
 if (two.overdraw) {
 	// Draw a full-screen quad to fade the existing framebuffer over
 	// time. Must be the first object in the scene!
+	//
+	// TODO: for lower values, the old contents never seem to
+	// disappear completely...
 	var darkener = two.makeRectangle(two.width/2, two.height/2,
 									 two.width,   two.height);
 	darkener.fill = "black";
-	darkener.opacity = 0.001; // tune me to adjust the fade speed
+	darkener.opacity = 0.5; // tune me to adjust the fade speed
 }
 
 //var rect = two.makeRectangle(two.width / 2, two.height / 2, 50 ,50);
@@ -77,15 +81,27 @@ if (two.overdraw) {
 
 function newWalker() {
 	"use strict";
-	var m_rect = two.makeRectangle(two.width/2, two.height/2, 5,5);
-	m_rect.linewidth = 0.01;
-	m_rect.fill = "yellow";
+	var m_line = two.makeLine(two.width/2, two.height/2,
+							  two.width/2, two.height/2);
+	m_line.linewidth = 3;
+	m_line.stroke = "yellow";
 	return {
 		step: function() {
-			var oldTrans = m_rect.translation.clone();
-			oldTrans.x += randomInt(-1, 2);
-			oldTrans.y += randomInt(-1, 2);
-			m_rect.translation.copy(oldTrans);
+			var monteCarlo = function() {
+				while(true) {
+					var r1 = Math.random();
+					var probability = r1;
+					var r2 = Math.random();
+					if (r2 < probability)
+						return r1;
+				}
+			};
+			var stepSize = 30 * (1-monteCarlo());
+			m_line.vertices[0].copy(m_line.vertices[1]);
+			m_line.vertices[1].set(
+				m_line.vertices[1].x + stepSize*(Math.random()*2-1),
+				m_line.vertices[1].y + stepSize*(Math.random()*2-1)
+			);
 		},
 	};
 }
