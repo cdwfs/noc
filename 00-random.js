@@ -76,10 +76,19 @@ var sketch00 = function() {
 				},
 			};
 		}
-		var walker = newWalker();
-		
+
 		pjs.size(640, 480);
+		var walker = newWalker();
 		pjs.draw = function() {
+			if (!pjs.focused) {
+				pjs.noStroke();
+				pjs.fill(0,0,0,128);
+				pjs.rect(pjs.width/2-30, pjs.height/2-10, 60, 20);
+				pjs.fill(255);
+				pjs.textAlign(pjs.CENTER);
+				pjs.text("Click me!", pjs.width/2, pjs.height/2);
+				return;
+			}
 			pjs.background(0);
 			pjs.fill(204, 102, 0);
 			pjs.rect(pjs.mouseX, pjs.mouseY, 10, 10);
